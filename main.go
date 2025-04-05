@@ -3,6 +3,7 @@ package main
 import (
 	"calpal-core/database"
 	"calpal-core/handler"
+	"calpal-core/repository"
 	"fmt"
 	"net/http"
 
@@ -22,7 +23,10 @@ func main() {
 	// Execute migrations
 	database.ExecuteMigrations(db)
 
-	authHandler := handler.NewAuthHandler(db)
+	authRepository := repository.NewAuthRepository(db)
+
+	authHandler := handler.NewAuthHandler(authRepository)
+
 	http.HandleFunc("/sign-up", authHandler.SignUp)
 	http.HandleFunc("/sign-in", authHandler.SignIn)
 
