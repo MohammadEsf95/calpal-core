@@ -1,0 +1,14 @@
+services:
+  postgres-test:
+    image: postgres:latest
+    hostname: postgres-test
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpassword
+      POSTGRES_DB: calpal-db
+    ports:
+      - "5432:5432"
+
+networks:
+  my_network:
+    driver: bridge

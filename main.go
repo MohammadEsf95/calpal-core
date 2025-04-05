@@ -2,9 +2,21 @@ package main
 
 import (
 	"calpal-core/entity"
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+
+	_ "github.com/lib/pq"
+)
+
+const (
+	host     = "localhost"
+	port     = 5432
+	user     = "testuser"
+	password = "testpassword"
+	dbname   = "calpal-db"
 )
 
 type ErrorResponse struct {
@@ -39,7 +51,32 @@ func setTargetCalories(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "not implemented")
 }
 
+func connectToPostgres() *sql.DB {
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err = db.Ping(); err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Successfully connected to database")
+
+	return db
+}
 func main() {
+	// Connect to database
+	db := connectToPostgres()
+
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(db)
+
 	// User registration: signup / login
 	http.HandleFunc("/sign-up", signUp)
 	http.HandleFunc("/sign-in", signIn)
