@@ -30,25 +30,6 @@ func ConnectToPostgres() *sql.DB {
 	return db
 }
 
-func ExecuteMigrations(db *sql.DB) {
-	log.Println("Executing migrations")
-
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS users (" +
-		"id VARCHAR(36) PRIMARY KEY," +
-		"first_name VARCHAR(100) NOT NULL," +
-		"last_name VARCHAR(100) NOT NULL," +
-		"password VARCHAR(255) NOT NULL," +
-		"email VARCHAR(255) UNIQUE NOT NULL," +
-		"target_calories INT," +
-		"created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP," +
-		"updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)")
-	if err != nil {
-		log.Fatalf("Error creating table: %v", err)
-	}
-
-	log.Println("Successfully executed migrations")
-}
-
 func Close(db *sql.DB) {
 	err := db.Close()
 	if err != nil {

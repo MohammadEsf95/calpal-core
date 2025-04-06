@@ -16,10 +16,10 @@ func NewAuthRepository(db *sql.DB) *AuthRepositoryImpl {
 	return &AuthRepositoryImpl{db: db}
 }
 
-func (r *AuthRepositoryImpl) SignUp(signUpUser entity.User) error {
+func (r *AuthRepositoryImpl) SignUp(signUpUser entity.User) (string, error) {
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(signUpUser.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	signUpUser.Password = string(hashPassword)
@@ -29,10 +29,10 @@ func (r *AuthRepositoryImpl) SignUp(signUpUser entity.User) error {
 		" VALUES ($1, $2, $3, $4, $5, $6, $7)", signUpUser.ID, signUpUser.FirstName, signUpUser.LastName, signUpUser.Password,
 		signUpUser.Email, time.Now(), time.Now())
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return signUpUser.ID, nil
 }
 
 func (r *AuthRepositoryImpl) SignIn() (entity.User, error) {
