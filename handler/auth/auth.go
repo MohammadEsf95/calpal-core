@@ -1,17 +1,17 @@
 package auth
 
 import (
-	"calpal-core/contract"
 	"calpal-core/entity"
+	"calpal-core/repository"
 	"encoding/json"
 	"net/http"
 )
 
 type Handler struct {
-	repo contract.AuthRepository
+	repo repository.AuthRepository
 }
 
-func NewAuthHandler(r contract.AuthRepository) *Handler {
+func NewAuthHandler(r repository.AuthRepository) *Handler {
 	return &Handler{repo: r}
 }
 

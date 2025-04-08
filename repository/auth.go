@@ -8,15 +8,20 @@ import (
 	"time"
 )
 
-type AuthRepositoryImpl struct {
+type AuthRepository interface {
+	SignUp(user entity.User) (string, error)
+	SignIn() (entity.User, error)
+}
+
+type authRepositoryImpl struct {
 	db *sql.DB
 }
 
-func NewAuthRepository(db *sql.DB) *AuthRepositoryImpl {
-	return &AuthRepositoryImpl{db: db}
+func NewAuthRepository(db *sql.DB) *authRepositoryImpl {
+	return &authRepositoryImpl{db: db}
 }
 
-func (r *AuthRepositoryImpl) SignUp(signUpUser entity.User) (string, error) {
+func (r *authRepositoryImpl) SignUp(signUpUser entity.User) (string, error) {
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(signUpUser.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
@@ -35,6 +40,6 @@ func (r *AuthRepositoryImpl) SignUp(signUpUser entity.User) (string, error) {
 	return signUpUser.ID, nil
 }
 
-func (r *AuthRepositoryImpl) SignIn() (entity.User, error) {
+func (r *authRepositoryImpl) SignIn() (entity.User, error) {
 	panic("implement me")
 }
