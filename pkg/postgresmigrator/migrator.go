@@ -1,19 +1,20 @@
-package database
+package postgresmigrator
 
 import (
+	"calpal-core/database"
 	"database/sql"
 	"fmt"
-	"github.com/rubenv/sql-migrate"
+	migrate "github.com/rubenv/sql-migrate"
 	"log"
 )
 
 type Migrator struct {
 	dialect    string
-	dbConfig   Config
+	dbConfig   database.Config
 	migrations *migrate.FileMigrationSource
 }
 
-func New(dbConfig Config, path string) Migrator {
+func New(dbConfig database.Config, path string) Migrator {
 
 	migrations := &migrate.FileMigrationSource{
 		Dir: path,

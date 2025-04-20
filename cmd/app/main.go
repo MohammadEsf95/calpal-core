@@ -5,6 +5,7 @@ import (
 	"calpal-core/handler/auth"
 	"calpal-core/handler/user"
 	"calpal-core/pkg/config_loader"
+	"calpal-core/pkg/postgresmigrator"
 	"calpal-core/repository"
 	"fmt"
 	"log"
@@ -36,12 +37,14 @@ func main() {
 		log.Fatalf("Error loading config: %v", err)
 	}
 
-	fmt.Println(config.PostgresDB)
-
 	// Connect to database
 	db := database.ConnectToPostgres(config.PostgresDB)
 
 	defer database.Close(db)
+
+	// Execute the migrations
+	migrator := postgresmigrator.New(config.PostgresDB, filepath.Join(workDir, "database", "migration"))
+	migrator.Up()
 
 	authRepository := repository.NewAuthRepository(db)
 	authHandler := auth.NewAuthHandler(authRepository)
