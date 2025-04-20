@@ -4,10 +4,13 @@ import (
 	"calpal-core/database"
 	"calpal-core/handler/auth"
 	"calpal-core/handler/user"
+	"calpal-core/pkg/config_loader"
 	"calpal-core/repository"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	_ "github.com/lib/pq"
 )
@@ -16,9 +19,27 @@ func setTargetCalories(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "not implemented")
 }
 
+type Config struct {
+	PostgresDB database.Config `koanf:"postgres"`
+}
+
 func main() {
+
+	var config Config
+	workDir, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Error loading working directory: %v", err)
+	}
+
+	err = configloader.Load(filepath.Join(workDir, "database", "dbconfig.yml"), &config)
+	if err != nil {
+		log.Fatalf("Error loading config: %v", err)
+	}
+
+	fmt.Println(config.PostgresDB)
+
 	// Connect to database
-	db := database.ConnectToPostgres()
+	db := database.ConnectToPostgres(config.PostgresDB)
 
 	defer database.Close(db)
 
