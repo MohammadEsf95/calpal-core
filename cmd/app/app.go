@@ -6,6 +6,7 @@ import (
 	"calpal-core/delivery/http/user"
 	httpserver "calpal-core/pkg/http_server"
 	"calpal-core/repository"
+	"calpal-core/service"
 	"database/sql"
 )
 
@@ -15,7 +16,8 @@ type Application struct {
 
 func Setup(db *sql.DB, cfg Config) Application {
 	authRepo := repository.NewAuthRepository(db)
-	authHandler := auth.NewAuthHandler(authRepo)
+	authService := service.NewAuthService(authRepo)
+	authHandler := auth.NewAuthHandler(authService, auth.NewValidator())
 
 	userRepo := repository.NewUserRepository(db)
 	userHandler := user.New(userRepo)

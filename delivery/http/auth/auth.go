@@ -1,24 +1,26 @@
 package auth
 
 import (
+	"calpal-core/delivery/http/auth/params"
 	"calpal-core/entity"
 	errhandle "calpal-core/pkg/err_handle"
-	"calpal-core/repository"
+	"calpal-core/service"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
 
 type Handler struct {
-	repo repository.AuthRepository
+	service   service.AuthService
+	validator Validator
 }
 
-func NewAuthHandler(r repository.AuthRepository) Handler {
-	return Handler{repo: r}
+func NewAuthHandler(r service.AuthService, v Validator) Handler {
+	return Handler{service: r, validator: v}
 }
 
 func (a *Handler) SignUp(e echo.Context) error {
 
-	var signUpUser entity.User
+	var signUpUser params.SignUpRequest
 
 	// Decode json body
 	err := e.Bind(&signUpUser)
@@ -27,11 +29,11 @@ func (a *Handler) SignUp(e echo.Context) error {
 	}
 
 	// Validate sign up entity
-	if err = ValidateUser(signUpUser); err != nil {
-		return e.JSON(http.StatusBadRequest, errhandle.NewError(errhandle.BadRequestError))
-	}
+	//if err = ValidateSignUp(signUpUser); err != nil {
+	//	return e.JSON(http.StatusBadRequest, errhandle.NewError(errhandle.BadRequestError))
+	//}
 
-	uid, err := a.repo.SignUp(signUpUser)
+	uid, err := a.service.SignUp(signUpUser)
 	if err != nil {
 		return e.JSON(http.StatusInternalServerError, errhandle.NewError(errhandle.UnexpectedError))
 	}
@@ -47,9 +49,14 @@ func (a *Handler) SignIn(e echo.Context) error {
 		return e.JSON(http.StatusBadRequest, errhandle.NewError(errhandle.BadRequestError))
 	}
 
-	if err = ValidateUser(signInUser); err != nil {
-		return e.JSON(http.StatusBadRequest, errhandle.NewError(errhandle.BadRequestError))
+	//if err = ValidateSignIn(signInUser); err != nil {
+	//	return e.JSON(http.StatusBadRequest, errhandle.NewError(errhandle.BadRequestError))
+	//}
+
+	in, err := a.service.SignIn(params.SignInRequest{})
+	if err != nil {
+		return e.JSON(http.StatusInternalServerError, errhandle.NewError(errhandle.UnexpectedError))
 	}
 
-	return e.JSON(http.StatusOK, entity.User{})
+	return e.JSON(http.StatusOK, in)
 }

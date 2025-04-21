@@ -1,54 +1,51 @@
 package auth
 
 import (
-	"calpal-core/entity"
-	"errors"
-	"regexp"
+	"calpal-core/delivery/http/auth/params"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
-func ValidateUser(user entity.User) error {
-	if err := validateFirstName(user.FirstName); err != nil {
-		return err
-	}
-	if err := validateLastName(user.LastName); err != nil {
-		return err
-	}
-	if err := validateEmail(user.Email); err != nil {
-		return err
-	}
-	if err := validatePassword(user.Password); err != nil {
-		return err
-	}
-	return nil
+var (
+	ErrEmailRequired       = "email is required"
+	ErrWrongEmailFormat    = "wrong email format"
+	ErrUsernameRequired    = "username is required"
+	ErrUsernameWrongLength = "username is too short or too long"
+)
+
+type Validator struct{}
+
+func NewValidator() Validator { return Validator{} }
+
+func (v Validator) ValidateSignUp(req params.SignUpRequest) error {
+	return validation.ValidateStruct(&req,
+		validation.Field(
+			&req.Email,
+			validation.Required.Error(ErrEmailRequired),
+			is.Email.Error(ErrWrongEmailFormat)),
+		validation.Field(
+			&req.Username,
+			validation.Required.Error(ErrUsernameRequired),
+			validation.Length(2, 20).Error(ErrUsernameWrongLength),
+		),
+		validation.Field(
+			&req.FirstName,
+			validation.Required,
+			validation.Length(2, 20),
+		),
+		validation.Field(
+			&req.LastName,
+			validation.Required,
+			validation.Length(2, 50),
+		),
+		validation.Field(
+			&req.Password,
+			validation.Length(8, 20),
+		),
+	)
 }
 
-func validateFirstName(firstName string) error {
-	if len(firstName) < 2 || len(firstName) > 50 {
-		return errors.New("first name must be between 2 and 50 characters")
-	}
-	return nil
-}
+func (v Validator) ValidateSignIn(req params.SignInRequest) error {
 
-func validateLastName(lastName string) error {
-	if len(lastName) < 2 || len(lastName) > 50 {
-		return errors.New("last name must be between 2 and 50 characters")
-	}
-	return nil
-}
-
-func validateEmail(email string) error {
-	// Simple email regex for validation
-	const emailRegex = `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	re := regexp.MustCompile(emailRegex)
-	if !re.MatchString(email) {
-		return errors.New("invalid email format")
-	}
-	return nil
-}
-
-func validatePassword(password string) error {
-	if len(password) < 8 {
-		return errors.New("password must be at least 8 characters long")
-	}
 	return nil
 }
