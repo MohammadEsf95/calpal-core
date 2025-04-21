@@ -2,11 +2,9 @@ package main
 
 import (
 	"calpal-core/database"
-	"calpal-core/handler/auth"
-	"calpal-core/handler/user"
 	"calpal-core/pkg/config_loader"
+	httpserver "calpal-core/pkg/http_server"
 	"calpal-core/pkg/postgresmigrator"
-	"calpal-core/repository"
 	"fmt"
 	"log"
 	"net/http"
@@ -21,7 +19,8 @@ func setTargetCalories(w http.ResponseWriter, r *http.Request) {
 }
 
 type Config struct {
-	PostgresDB database.Config `koanf:"postgres"`
+	PostgresDB database.Config   `koanf:"postgres"`
+	HttpServer httpserver.Config `koanf:"http_server"`
 }
 
 func main() {
@@ -32,7 +31,7 @@ func main() {
 		log.Fatalf("Error loading working directory: %v", err)
 	}
 
-	err = configloader.Load(filepath.Join(workDir, "database", "dbconfig.yml"), &config)
+	err = configloader.Load(filepath.Join(workDir, "deploy", "config.yml"), &config)
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
@@ -46,21 +45,6 @@ func main() {
 	migrator := postgresmigrator.New(config.PostgresDB, filepath.Join(workDir, "database", "migration"))
 	migrator.Up()
 
-	authRepository := repository.NewAuthRepository(db)
-	authHandler := auth.NewAuthHandler(authRepository)
-
-	userRepository := repository.NewUserRepository(db)
-	userHandler := user.New(userRepository)
-
-	http.HandleFunc("/sign-up", authHandler.SignUp)
-	http.HandleFunc("/sign-in", authHandler.SignIn)
-
-	http.HandleFunc("/users", userHandler.Users)
-
-	// Set target calories
-	http.HandleFunc("/set-target-calories", setTargetCalories)
-
-	log.Println("Starting server on port 8080")
-	http.ListenAndServe(":8080", nil)
-	// food log
+	app := Setup(db, config)
+	app.Start()
 }

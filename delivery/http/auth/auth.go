@@ -11,8 +11,8 @@ type Handler struct {
 	repo repository.AuthRepository
 }
 
-func NewAuthHandler(r repository.AuthRepository) *Handler {
-	return &Handler{repo: r}
+func NewAuthHandler(r repository.AuthRepository) Handler {
+	return Handler{repo: r}
 }
 
 func (a *Handler) SignUp(w http.ResponseWriter, r *http.Request) {

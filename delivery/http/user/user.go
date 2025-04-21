@@ -10,8 +10,8 @@ type Handler struct {
 	repo repository.UserRepository
 }
 
-func New(repo repository.UserRepository) *Handler {
-	return &Handler{repo: repo}
+func New(repo repository.UserRepository) Handler {
+	return Handler{repo: repo}
 }
 
 func (h *Handler) Users(w http.ResponseWriter, r *http.Request) {
