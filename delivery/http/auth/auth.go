@@ -2,8 +2,9 @@ package auth
 
 import (
 	"calpal-core/entity"
+	errhandle "calpal-core/pkg/err_handle"
 	"calpal-core/repository"
-	"encoding/json"
+	"github.com/labstack/echo/v4"
 	"net/http"
 )
 
@@ -15,45 +16,40 @@ func NewAuthHandler(r repository.AuthRepository) Handler {
 	return Handler{repo: r}
 }
 
-func (a *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+func (a *Handler) SignUp(e echo.Context) error {
 
 	var signUpUser entity.User
 
 	// Decode json body
-	err := json.NewDecoder(r.Body).Decode(&signUpUser)
+	err := e.Bind(&signUpUser)
 	if err != nil {
-		handleErr(err, http.StatusBadRequest, w)
-		return
+		return e.JSON(http.StatusBadRequest, errhandle.NewError(errhandle.BadRequestError))
 	}
 
 	// Validate sign up entity
 	if err = ValidateUser(signUpUser); err != nil {
-		handleErr(err, http.StatusBadRequest, w)
-		return
+		return e.JSON(http.StatusBadRequest, errhandle.NewError(errhandle.BadRequestError))
 	}
 
 	uid, err := a.repo.SignUp(signUpUser)
 	if err != nil {
-		handleErr(err, http.StatusInternalServerError, w)
-		return
+		return e.JSON(http.StatusInternalServerError, errhandle.NewError(errhandle.UnexpectedError))
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(uid)
+	return e.JSON(http.StatusOK, uid)
 }
 
-func (a *Handler) SignIn(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-}
+func (a *Handler) SignIn(e echo.Context) error {
+	var signInUser entity.User
 
-func handleErr(err error, status int, w http.ResponseWriter) {
-	w.WriteHeader(status)
-	errorResponse := entity.ErrorResponse{Message: err.Error()}
-	bytes, err := json.Marshal(errorResponse) // Handle error from Marshal
+	err := e.Bind(&signInUser)
 	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
+		return e.JSON(http.StatusBadRequest, errhandle.NewError(errhandle.BadRequestError))
 	}
-	w.Write(bytes)
+
+	if err = ValidateUser(signInUser); err != nil {
+		return e.JSON(http.StatusBadRequest, errhandle.NewError(errhandle.BadRequestError))
+	}
+
+	return e.JSON(http.StatusOK, entity.User{})
 }

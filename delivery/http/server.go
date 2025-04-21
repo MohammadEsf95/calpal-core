@@ -37,4 +37,5 @@ func (s Server) RegisterRoutes() {
 	v1 := s.HTTPServer.Router.Group("/v1")
 
 	v1.GET("/health-check", s.healthCheck)
+	v1.POST("/sign-up", s.AuthHandler.SignUp)
 }
