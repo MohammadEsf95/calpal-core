@@ -1,28 +1,25 @@
 package user
 
 import (
-	"calpal-core/repository"
-	"encoding/json"
+	"calpal-core/service"
+	"github.com/labstack/echo/v4"
 	"net/http"
 )
 
 type Handler struct {
-	repo repository.UserRepository
+	service service.UserService
 }
 
-func New(repo repository.UserRepository) Handler {
-	return Handler{repo: repo}
+func New(srv service.UserService) Handler {
+	return Handler{service: srv}
 }
 
-func (h *Handler) Users(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+func (h *Handler) Users(e echo.Context) error {
 
-	users, err := h.repo.Users()
+	users, err := h.service.Users()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return e.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(users)
+	return e.JSON(http.StatusOK, users)
 }

@@ -4,6 +4,7 @@ import (
 	"calpal-core/delivery/http/auth/params"
 	"calpal-core/entity"
 	"calpal-core/repository"
+	"github.com/google/uuid"
 	"time"
 )
 
@@ -22,15 +23,15 @@ func NewAuthService(authRepo repository.AuthRepository) AuthService {
 
 func (a authService) SignUp(user params.SignUpRequest) (string, error) {
 	u := entity.User{
-		ID:             "",
-		FirstName:      "",
-		LastName:       "",
-		Username:       "",
-		Password:       "",
-		Email:          "",
+		ID:             uuid.New().String(),
+		FirstName:      user.FirstName,
+		LastName:       user.LastName,
+		Username:       user.Username,
+		Password:       user.Password,
+		Email:          user.Email,
 		TargetCalories: 0,
-		CreatedAt:      time.Time{},
-		UpdatedAt:      time.Time{},
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
 	}
 	return a.authRepo.SignUp(u)
 }

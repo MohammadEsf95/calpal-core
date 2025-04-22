@@ -20,7 +20,8 @@ func Setup(db *sql.DB, cfg Config) Application {
 	authHandler := auth.NewAuthHandler(authService, auth.NewValidator())
 
 	userRepo := repository.NewUserRepository(db)
-	userHandler := user.New(userRepo)
+	userService := service.NewUserService(userRepo)
+	userHandler := user.New(userService)
 
 	server := httpserver.New(cfg.HttpServer)
 	httpServer := http.New(server, authHandler, userHandler)

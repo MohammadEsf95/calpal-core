@@ -3,7 +3,6 @@ package repository
 import (
 	"calpal-core/entity"
 	"database/sql"
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"time"
 )
@@ -22,24 +21,20 @@ func NewAuthRepository(db *sql.DB) *authRepositoryImpl {
 }
 
 func (r *authRepositoryImpl) SignUp(signUpUser entity.User) (string, error) {
-	var user entity.User
 
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(signUpUser.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
 	}
 
-	user.Password = string(hashPassword)
-	user.ID = uuid.New().String()
-
-	_, err = r.db.Exec("INSERT INTO users (id, first_name, last_name, password, email, created_at, updated_at)"+
-		" VALUES ($1, $2, $3, $4, $5, $6, $7)", user.ID, signUpUser.FirstName, signUpUser.LastName, user.Password,
-		signUpUser.Email, time.Now(), time.Now())
+	_, err = r.db.Exec("INSERT INTO users (id, first_name, last_name, username, password, email, created_at, updated_at)"+
+		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", signUpUser.ID, signUpUser.FirstName, signUpUser.LastName,
+		signUpUser.Username, hashPassword, signUpUser.Email, time.Now(), time.Now())
 	if err != nil {
 		return "", err
 	}
 
-	return user.ID, nil
+	return signUpUser.ID, nil
 }
 
 func (r *authRepositoryImpl) SignIn(req entity.User) (entity.User, error) {

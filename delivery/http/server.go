@@ -38,4 +38,6 @@ func (s Server) RegisterRoutes() {
 
 	v1.GET("/health-check", s.healthCheck)
 	v1.POST("/sign-up", s.AuthHandler.SignUp)
+	v1.POST("/sign-in", s.AuthHandler.SignIn)
+	v1.GET("/users", s.UserHandler.Users)
 }
